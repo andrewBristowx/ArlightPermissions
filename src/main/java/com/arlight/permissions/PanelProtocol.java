@@ -8,6 +8,7 @@ import java.util.Base64;
 
 final class PanelProtocol {
     static final String CHANNEL = "arlightpermissions:panel";
+    private static final int MAX_PAYLOAD_BYTES = 65_536;
     private static final Base64.Encoder B64 = Base64.getUrlEncoder().withoutPadding();
     private PanelProtocol() {}
     static String enc(String s) { return s == null || s.isEmpty() ? "" : B64.encodeToString(s.getBytes(StandardCharsets.UTF_8)); }
@@ -19,8 +20,11 @@ final class PanelProtocol {
         player.sendPluginMessage(plugin, CHANNEL, out.toByteArray());
     }
     static String read(byte[] data) {
+        if (data == null || data.length == 0 || data.length > MAX_PAYLOAD_BYTES) {
+            throw new IllegalArgumentException("Payload inválido");
+        }
         int[] pos={0}; int len=readVarInt(data,pos);
-        if(len<0 || pos[0]+len>data.length) throw new IllegalArgumentException("Payload inválido");
+        if(len<0 || len>MAX_PAYLOAD_BYTES || pos[0]+len>data.length) throw new IllegalArgumentException("Payload inválido");
         return new String(data,pos[0],len,StandardCharsets.UTF_8);
     }
     private static void writeVarInt(ByteArrayOutputStream out,int value){while((value&-128)!=0){out.write(value&127|128);value>>>=7;}out.write(value);}
