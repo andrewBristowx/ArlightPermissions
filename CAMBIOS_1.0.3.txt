@@ -1,0 +1,5 @@
+ArlightPermissions 1.0.3 - NEGOTIATED CHANNEL COMPATIBILITY
+
+- Debe usarse junto con ArlightChatClient 4.0.1.
+- El canal arlightpermissions:panel queda negociado bidireccionalmente por el cliente.
+- Conserva /permisos fallback como respaldo.

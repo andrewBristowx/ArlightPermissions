@@ -1,0 +1,20 @@
+name: ArlightPermissions
+version: '1.0.2'
+main: com.arlight.permissions.ArlightPermissionsPlugin
+api-version: '1.21'
+author: Pony0n / Arlight
+description: Panel visual central para LuckPerms, emotes, pases y cosméticos.
+depend: [LuckPerms]
+softdepend: [ArlightCore, ArlightChat]
+commands:
+  permisos:
+    aliases: [aperms, arlightperms]
+    description: Abre el panel visual de permisos Arlight.
+    usage: /permisos [reload|fallback]
+permissions:
+  arlightpermissions.admin:
+    description: Abre y utiliza el panel completo.
+    default: op
+  arlightpermissions.audit:
+    description: Consulta el historial de cambios.
+    default: op
