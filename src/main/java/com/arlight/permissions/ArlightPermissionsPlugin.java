@@ -12,14 +12,26 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import java.time.Duration;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public final class ArlightPermissionsPlugin extends JavaPlugin implements PluginMessageListener, CommandExecutor {
+    private static final String FREEFORM_PERMISSION = "arlightpermissions.freeform";
+    private static final long RATE_WINDOW_MILLIS = 60_000L;
+
     private LuckPermsService lp;
     private List<PermissionCategory> categories = List.of();
+    private Set<String> catalogNodes = Set.of();
+    private final Map<UUID, ArrayDeque<Long>> recentChanges = new HashMap<>();
     private AuditLog audit;
 
     @Override
@@ -42,12 +54,27 @@ public final class ArlightPermissionsPlugin extends JavaPlugin implements Plugin
         getServer().getMessenger().registerIncomingPluginChannel(this, PanelProtocol.CHANNEL, this);
         Objects.requireNonNull(getCommand("permisos"), "Falta el comando permisos en plugin.yml")
                 .setExecutor(this);
-        getLogger().info("ArlightPermissions 1.0.3 listo: panel visual + LuckPerms.");
+        getLogger().info("ArlightPermissions 1.0.4 listo: panel visual + políticas seguras de LuckPerms.");
+    }
+
+    @Override
+    public void onDisable() {
+        if (audit != null) {
+            audit.close();
+        }
+        recentChanges.clear();
     }
 
     private void reloadCatalog() {
         reloadConfig();
         categories = new PermissionCatalog(this).load();
+        Set<String> nodes = new HashSet<>();
+        for (PermissionCategory category : categories) {
+            for (PermissionEntry entry : category.entries()) {
+                nodes.add(normalizeNode(entry.node()));
+            }
+        }
+        catalogNodes = Set.copyOf(nodes);
     }
 
     @Override
@@ -170,23 +197,64 @@ public final class ArlightPermissionsPlugin extends JavaPlugin implements Plugin
 
     private void apply(Player actor, String[] parts) {
         if (parts.length < 7) {
+            sendError(actor, "Solicitud incompleta.");
             return;
         }
 
-        final String type = PanelProtocol.dec(parts[1]);
-        final String target = PanelProtocol.dec(parts[2]);
-        final String node = PanelProtocol.dec(parts[3]);
-        final String operation = parts[4];
+        final String type = PanelProtocol.dec(parts[1]).toLowerCase(Locale.ROOT);
+        final String target = PanelProtocol.dec(parts[2]).trim();
+        final String node = normalizeNode(PanelProtocol.dec(parts[3]));
+        final String operation = parts[4].toUpperCase(Locale.ROOT);
         final boolean value = Boolean.parseBoolean(parts[5]);
+
+        if (!type.equals("user") && !type.equals("group")) {
+            sendError(actor, "Tipo de destino inválido.");
+            return;
+        }
+        if (target.isBlank() || target.length() > 64) {
+            sendError(actor, "Destino inválido.");
+            return;
+        }
+        if (!operation.equals("SET") && !operation.equals("CLEAR")) {
+            sendError(actor, "Operación inválida.");
+            return;
+        }
+        if (!isValidNode(node)) {
+            sendError(actor, "Nodo de permiso inválido.");
+            return;
+        }
+        boolean freeformAllowed = getConfig().getBoolean("allow-freeform-permissions", true)
+                && actor.hasPermission(FREEFORM_PERMISSION);
+        if (!catalogNodes.contains(node) && !freeformAllowed) {
+            sendError(actor, "Ese nodo no pertenece al catálogo autorizado.");
+            return;
+        }
 
         long parsedSeconds;
         try {
             parsedSeconds = Long.parseLong(parts[6]);
         } catch (NumberFormatException ignored) {
-            parsedSeconds = 0L;
+            sendError(actor, "Duración temporal inválida.");
+            return;
         }
 
-        final long seconds = Math.max(0L, parsedSeconds);
+        if (parsedSeconds < 0L) {
+            sendError(actor, "La duración no puede ser negativa.");
+            return;
+        }
+        long maxDays = Math.max(1L, Math.min(3650L,
+                getConfig().getLong("maximum-temporary-days", 365L)));
+        long maximumSeconds = Duration.ofDays(maxDays).getSeconds();
+        if (parsedSeconds > maximumSeconds) {
+            sendError(actor, "La duración máxima es de " + maxDays + " días.");
+            return;
+        }
+        if (!consumeChangeAllowance(actor)) {
+            sendError(actor, "Demasiados cambios. Espera un momento antes de continuar.");
+            return;
+        }
+
+        final long seconds = parsedSeconds;
         final Duration duration = seconds > 0L ? Duration.ofSeconds(seconds) : null;
 
         CompletableFuture<Void> future;
@@ -219,5 +287,35 @@ public final class ArlightPermissionsPlugin extends JavaPlugin implements Plugin
                             "SUCCESS|" + PanelProtocol.enc("Cambio guardado en LuckPerms"));
                     open(actor);
                 }));
+    }
+
+    private String normalizeNode(String node) {
+        return node == null ? "" : node.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private boolean isValidNode(String node) {
+        return !node.isBlank()
+                && node.length() <= 190
+                && node.matches("[a-z0-9_*.-]+");
+    }
+
+    private boolean consumeChangeAllowance(Player actor) {
+        int limit = Math.max(1, Math.min(300,
+                getConfig().getInt("changes-per-minute", 30)));
+        long now = System.currentTimeMillis();
+        ArrayDeque<Long> timestamps = recentChanges.computeIfAbsent(
+                actor.getUniqueId(), ignored -> new ArrayDeque<>());
+        while (!timestamps.isEmpty() && now - timestamps.peekFirst() >= RATE_WINDOW_MILLIS) {
+            timestamps.removeFirst();
+        }
+        if (timestamps.size() >= limit) {
+            return false;
+        }
+        timestamps.addLast(now);
+        return true;
+    }
+
+    private void sendError(Player actor, String message) {
+        PanelProtocol.send(this, actor, "ERROR|" + PanelProtocol.enc(message));
     }
 }

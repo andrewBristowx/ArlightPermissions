@@ -1,0 +1,9 @@
+ArlightPermissions 1.0.4 - SAFE ADMIN POLICY
+
+- Corrige la versión interna del plugin para que coincida con el JAR.
+- Rechaza tipos, operaciones, destinos y nodos de permiso inválidos.
+- Solo permite por defecto nodos presentes en el catálogo visual.
+- Los nodos libres requieren el permiso separado arlightpermissions.freeform.
+- Añade duración temporal máxima configurable y límite de cambios por minuto.
+- Limita el tamaño de payloads del canal administrativo.
+- Escribe audit.log fuera del hilo principal y rota el archivo por tamaño.

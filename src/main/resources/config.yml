@@ -2,6 +2,11 @@ admin-permission: arlightpermissions.admin
 client-channel: arlightpermissions:panel
 fallback-inventory: true
 default-temporary-days: 30
+maximum-temporary-days: 365
+changes-per-minute: 30
+allow-freeform-permissions: true
+audit:
+  max-bytes: 1048576
 categories:
   emotes:
     display: "Emotes"

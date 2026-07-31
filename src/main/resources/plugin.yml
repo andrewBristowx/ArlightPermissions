@@ -1,5 +1,5 @@
 name: ArlightPermissions
-version: '1.0.2'
+version: '1.0.4'
 main: com.arlight.permissions.ArlightPermissionsPlugin
 api-version: '1.21'
 author: Pony0n / Arlight
@@ -18,3 +18,6 @@ permissions:
   arlightpermissions.audit:
     description: Consulta el historial de cambios.
     default: op
+  arlightpermissions.freeform:
+    description: Permite administrar nodos que no están en el catálogo visual.
+    default: false
