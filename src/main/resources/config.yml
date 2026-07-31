@@ -1,0 +1,37 @@
+admin-permission: arlightpermissions.admin
+client-channel: arlightpermissions:panel
+fallback-inventory: true
+default-temporary-days: 30
+categories:
+  emotes:
+    display: "Emotes"
+    icon: "☺"
+    description: "Emotes gratuitos, VIP, de pase y exclusivos"
+    permissions:
+      - { node: "arlight.emotes.default", name: "Emotes gratuitos", description: "Paquete base para seguidores" }
+      - { node: "arlight.emotes.vip", name: "Emotes VIP", description: "Colección completa del rango VIP" }
+      - { node: "arlight.emotes.pase1", name: "Pase temporada 1", description: "Emotes de la primera temporada" }
+      - { node: "arlight.emotes.all", name: "Todos los emotes", description: "Acceso total, incluidos futuros emotes" }
+  passes:
+    display: "Pases"
+    icon: "★"
+    description: "Pases gratuitos, premium y recompensas temporales"
+    permissions:
+      - { node: "arlight.pass.season1", name: "Pase temporada 1", description: "Ruta gratuita de temporada" }
+      - { node: "arlight.pass.season1.premium", name: "Pase premium 1", description: "Ruta premium completa" }
+      - { node: "arlight.pass.founder", name: "Fundador", description: "Beneficios permanentes de fundador" }
+  cosmetics:
+    display: "Cosméticos"
+    icon: "✦"
+    description: "Ropas, alas, mascotas, partículas y podios"
+    permissions:
+      - { node: "arlight.cosmetics.use", name: "Usar cosméticos", description: "Acceso al armario cosmético" }
+      - { node: "arlight.cosmetics.vip", name: "Cosméticos VIP", description: "Colección exclusiva VIP" }
+      - { node: "arlight.cosmetics.all", name: "Todos los cosméticos", description: "Acceso total al catálogo" }
+  minigames:
+    display: "Minijuegos"
+    icon: "⚔"
+    description: "Administración y ventajas no competitivas"
+    permissions:
+      - { node: "arlight.minigames.admin", name: "Administrar minijuegos", description: "Controles administrativos generales" }
+      - { node: "arlight.minigames.spectate", name: "Espectador avanzado", description: "Herramientas especiales de espectador" }

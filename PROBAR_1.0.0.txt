@@ -1,0 +1,10 @@
+1. Compilar ArlightPermissions con `mvn clean package` usando Java 21.
+2. Compilar ArlightChatClient 3.8.0 con `gradlew build`.
+3. Instalar LuckPerms + JAR del plugin en plugins/.
+4. Instalar el cliente 3.8.0 en mods/.
+5. Entrar como OP o con arlightpermissions.admin.
+6. Ejecutar /permisos.
+7. Probar: rango VIP -> arlight.emotes.vip -> Permitir.
+8. Verificar con /lp group vip permission check arlight.emotes.vip.
+9. Probar jugador, Negar, 30 días y Limpiar.
+10. Revisar plugins/ArlightPermissions/audit.log.

@@ -1,0 +1,1 @@
+Corrige apertura runtime en Arclight: envío directo del payload, /permisos fallback y registro de excepciones.

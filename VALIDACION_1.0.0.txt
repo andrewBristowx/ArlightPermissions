@@ -1,0 +1,13 @@
+VALIDACIÓN ESTÁTICA — ArlightPermissions 1.0.1
+- Estructura Maven y plugin.yml presentes.
+- Dependencia obligatoria: LuckPerms API 5.4.
+- Canal bidireccional: arlightpermissions:panel.
+- Protección de acceso aplicada en comando y mensajes entrantes.
+- Cambios persistidos exclusivamente por LuckPerms.
+- Auditoría append-only en audit.log.
+- No se generaron imágenes ni texturas.
+
+COMPILACIÓN NO EJECUTADA EN ESTE ENTORNO:
+- Maven no está instalado.
+- Gradle no pudo descargar su distribución porque el entorno no tiene acceso DNS.
+Compilar localmente con Java 21 antes de instalar en producción.
